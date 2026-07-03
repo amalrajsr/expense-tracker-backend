@@ -6,6 +6,7 @@ const expenseCategories = [
   { name: "Shopping", slug: "shopping" },
   { name: "Bills", slug: "bills" },
   { name: "Health", slug: "health" },
+  { name: "Others", slug: "others" },
 ];
 
 async function main(): Promise<void> {
