@@ -8,4 +8,6 @@
  *
  * 🟢 You can import this file directly.
  */
+export type * from './models/ExpenseCategory'
+export type * from './models/Expense'
 export type * from './commonInputTypes'

@@ -20,7 +20,11 @@
     "prisma:studio": "prisma studio",
     "prisma:generate": "prisma generate",
     "db:validate": "prisma validate",
-    "db:pull": "prisma db pull --print"
+    "db:pull": "prisma db pull --print",
+    "db:seed": "prisma db seed"
+  },
+  "prisma": {
+    "seed": "ts-node --transpile-only prisma/seed.ts"
   },
   "keywords": [],
   "author": "",
@@ -30,6 +34,7 @@
     "@types/express": "^5.0.6",
     "@types/node": "^26.1.0",
     "prisma": "^7.8.0",
+    "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^6.0.3"
   }

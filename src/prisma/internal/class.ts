@@ -20,7 +20,7 @@ const config: runtime.GetPrismaClientConfig = {
   "clientVersion": "7.8.0",
   "engineVersion": "3c6e192761c0362d496ed980de936e2f3cebcd3a",
   "activeProvider": "mysql",
-  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Get a free hosted Postgres database in seconds: `npx create-db`\n\ngenerator client {\n  provider = \"prisma-client\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"mysql\"\n}\n",
+  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\ngenerator client {\n  provider = \"prisma-client\"\n  output   = \"../src/prisma\"\n}\n\ndatasource db {\n  provider = \"mysql\"\n}\n\nmodel ExpenseCategory {\n  id        BigInt    @id @default(autoincrement()) @db.UnsignedBigInt\n  name      String    @unique @db.VarChar(64)\n  slug      String    @unique @db.VarChar(80)\n  createdAt DateTime  @default(now()) @map(\"created_at\")\n  expenses  Expense[]\n\n  @@map(\"expense_categories\")\n}\n\nmodel Expense {\n  id          BigInt          @id @default(autoincrement()) @db.UnsignedBigInt\n  categoryId  BigInt          @map(\"category_id\") @db.UnsignedBigInt\n  amount      Decimal         @db.Decimal(12, 2)\n  expenseDate DateTime        @map(\"expense_date\")\n  note        String?         @db.VarChar(500)\n  createdAt   DateTime        @default(now()) @map(\"created_at\")\n  updatedAt   DateTime        @default(now()) @updatedAt @map(\"updated_at\")\n  category    ExpenseCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict, onUpdate: Cascade)\n\n  @@index([expenseDate, id], map: \"idx_expenses_date\")\n  @@index([categoryId, expenseDate, id], map: \"idx_expenses_category_date\")\n  @@map(\"expenses\")\n}\n",
   "runtimeDataModel": {
     "models": {},
     "enums": {},
@@ -32,10 +32,10 @@ const config: runtime.GetPrismaClientConfig = {
   }
 }
 
-config.runtimeDataModel = JSON.parse("{\"models\":{},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"ExpenseCategory\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"slug\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"created_at\"},{\"name\":\"expenses\",\"kind\":\"object\",\"type\":\"Expense\",\"relationName\":\"ExpenseToExpenseCategory\"}],\"dbName\":\"expense_categories\"},\"Expense\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"categoryId\",\"kind\":\"scalar\",\"type\":\"BigInt\",\"dbName\":\"category_id\"},{\"name\":\"amount\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"expenseDate\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"expense_date\"},{\"name\":\"note\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"created_at\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"updated_at\"},{\"name\":\"category\",\"kind\":\"object\",\"type\":\"ExpenseCategory\",\"relationName\":\"ExpenseToExpenseCategory\"}],\"dbName\":\"expenses\"}},\"enums\":{},\"types\":{}}")
 config.parameterizationSchema = {
-  strings: JSON.parse("[]"),
-  graph: "AAAA"
+  strings: JSON.parse("[\"where\",\"orderBy\",\"cursor\",\"category\",\"expenses\",\"_count\",\"ExpenseCategory.findUnique\",\"ExpenseCategory.findUniqueOrThrow\",\"ExpenseCategory.findFirst\",\"ExpenseCategory.findFirstOrThrow\",\"ExpenseCategory.findMany\",\"data\",\"ExpenseCategory.createOne\",\"ExpenseCategory.createMany\",\"ExpenseCategory.updateOne\",\"ExpenseCategory.updateMany\",\"create\",\"update\",\"ExpenseCategory.upsertOne\",\"ExpenseCategory.deleteOne\",\"ExpenseCategory.deleteMany\",\"having\",\"_avg\",\"_sum\",\"_min\",\"_max\",\"ExpenseCategory.groupBy\",\"ExpenseCategory.aggregate\",\"Expense.findUnique\",\"Expense.findUniqueOrThrow\",\"Expense.findFirst\",\"Expense.findFirstOrThrow\",\"Expense.findMany\",\"Expense.createOne\",\"Expense.createMany\",\"Expense.updateOne\",\"Expense.updateMany\",\"Expense.upsertOne\",\"Expense.deleteOne\",\"Expense.deleteMany\",\"Expense.groupBy\",\"Expense.aggregate\",\"AND\",\"OR\",\"NOT\",\"id\",\"categoryId\",\"amount\",\"expenseDate\",\"note\",\"createdAt\",\"updatedAt\",\"equals\",\"in\",\"notIn\",\"lt\",\"lte\",\"gt\",\"gte\",\"contains\",\"startsWith\",\"endsWith\",\"search\",\"not\",\"name\",\"slug\",\"every\",\"some\",\"none\",\"is\",\"isNot\",\"connectOrCreate\",\"upsert\",\"createMany\",\"set\",\"disconnect\",\"delete\",\"connect\",\"updateMany\",\"deleteMany\",\"_relevance\",\"increment\",\"decrement\",\"multiply\",\"divide\"]"),
+  graph: "dxIcCAQAAEkAICoAAEUAMCsAAAkAECwAAEUAMC0EAAAAATJAAEgAIUABAAAAAUEBAAAAAQEAAAABACALAwAATQAgKgAASgAwKwAAAwAQLAAASgAwLQQARgAhLgQARgAhLxAASwAhMEAASAAhMQEATAAhMkAASAAhM0AASAAhAwMAAHAAIDEAAE4AIFAAAHEAIAsDAABNACAqAABKADArAAADABAsAABKADAtBAAAAAEuBABGACEvEABLACEwQABIACExAQBMACEyQABIACEzQABIACEDAAAAAwAgAQAABAAwAgAABQAgAQAAAAMAIAEAAAABACAIBAAASQAgKgAARQAwKwAACQAQLAAARQAwLQQARgAhMkAASAAhQAEARwAhQQEARwAhAgQAAG4AIFAAAG8AIAMAAAAJACABAAAKADACAAABACADAAAACQAgAQAACgAwAgAAAQAgAwAAAAkAIAEAAAoAMAIAAAEAIAUEAABtACAtBAAAAAEyQAAAAAFAAQAAAAFBAQAAAAEBCwAADgAgBC0EAAAAATJAAAAAAUABAAAAAUEBAAAAAQELAAAQADAFBAAAYAAgLQQAVAAhMkAAVgAhQAEAXwAhQQEAXwAhAgAAAAEAIAsAABIAIAQtBABUACEyQABWACFAAQBfACFBAQBfACECAAAACQAgCwAAFAAgAwAAAAEAIBAAAA4AIBEAABIAIAEAAAABACABAAAACQAgBQUAAFoAIBYAAFsAIBcAAF4AIBgAAF0AIBkAAFwAIAcqAABBADArAAAaABAsAABBADAtBAAyACEyQAA0ACFAAQBCACFBAQBCACEDAAAACQAgAQAAGQAwFQAAGgAgAwAAAAkAIAEAAAoAMAIAAAEAIAEAAAAFACABAAAABQAgAwAAAAMAIAEAAAQAMAIAAAUAIAMAAAADACABAAAEADACAAAFACADAAAAAwAgAQAABAAwAgAABQAgCAMAAFkAIC0EAAAAAS4EAAAAAS8QAAAAATBAAAAAATEBAAAAATJAAAAAATNAAAAAAQELAAAiACAHLQQAAAABLgQAAAABLxAAAAABMEAAAAABMQEAAAABMkAAAAABM0AAAAABAQsAACQAMAgDAABYACAtBABUACEuBABUACEvEABVACEwQABWACExAQBXACEyQABWACEzQABWACECAAAABQAgCwAAJgAgBy0EAFQAIS4EAFQAIS8QAFUAITBAAFYAITEBAFcAITJAAFYAITNAAFYAIQIAAAADACALAAAoACADAAAABQAgEAAAIgAgEQAAJgAgAQAAAAUAIAEAAAADACAGBQAATwAgFgAAUAAgFwAAUwAgGAAAUgAgGQAAUQAgMQAATgAgCioAADEAMCsAAC4AECwAADEAMC0EADIAIS4EADIAIS8QADMAITBAADQAITEBADUAITJAADQAITNAADQAIQMAAAADACABAAAtADAVAAAuACADAAAAAwAgAQAABAAwAgAABQAgCioAADEAMCsAAC4AECwAADEAMC0EADIAIS4EADIAIS8QADMAITBAADQAITEBADUAITJAADQAITNAADQAIQ0FAAA6ACAWAAA_ACAXAABAACAYAABAACAZAABAACA0BAAAAAE1BAAAAAQ2BAAAAAQ3BAAAAAE4BAAAAAE5BAAAAAE6BAAAAAE_BAA-ACENBQAAOgAgFgAAPQAgFwAAPQAgGAAAPQAgGQAAPQAgNBAAAAABNRAAAAAENhAAAAAENxAAAAABOBAAAAABORAAAAABOhAAAAABPxAAPAAhCwUAADoAIBgAADsAIBkAADsAIDRAAAAAATVAAAAABDZAAAAABDdAAAAAAThAAAAAATlAAAAAATpAAAAAAT9AADkAIQ8FAAA3ACAYAAA4ACAZAAA4ACA0AQAAAAE1AQAAAAU2AQAAAAU3AQAAAAE4AQAAAAE5AQAAAAE6AQAAAAE7AQAAAAE8AQAAAAE9AQAAAAE-AQAAAAE_AQA2ACEPBQAANwAgGAAAOAAgGQAAOAAgNAEAAAABNQEAAAAFNgEAAAAFNwEAAAABOAEAAAABOQEAAAABOgEAAAABOwEAAAABPAEAAAABPQEAAAABPgEAAAABPwEANgAhCDQCAAAAATUCAAAABTYCAAAABTcCAAAAATgCAAAAATkCAAAAAToCAAAAAT8CADcAIQw0AQAAAAE1AQAAAAU2AQAAAAU3AQAAAAE4AQAAAAE5AQAAAAE6AQAAAAE7AQAAAAE8AQAAAAE9AQAAAAE-AQAAAAE_AQA4ACELBQAAOgAgGAAAOwAgGQAAOwAgNEAAAAABNUAAAAAENkAAAAAEN0AAAAABOEAAAAABOUAAAAABOkAAAAABP0AAOQAhCDQCAAAAATUCAAAABDYCAAAABDcCAAAAATgCAAAAATkCAAAAAToCAAAAAT8CADoAIQg0QAAAAAE1QAAAAAQ2QAAAAAQ3QAAAAAE4QAAAAAE5QAAAAAE6QAAAAAE_QAA7ACENBQAAOgAgFgAAPQAgFwAAPQAgGAAAPQAgGQAAPQAgNBAAAAABNRAAAAAENhAAAAAENxAAAAABOBAAAAABORAAAAABOhAAAAABPxAAPAAhCDQQAAAAATUQAAAABDYQAAAABDcQAAAAATgQAAAAATkQAAAAAToQAAAAAT8QAD0AIQ0FAAA6ACAWAAA_ACAXAABAACAYAABAACAZAABAACA0BAAAAAE1BAAAAAQ2BAAAAAQ3BAAAAAE4BAAAAAE5BAAAAAE6BAAAAAE_BAA-ACEINAgAAAABNQgAAAAENggAAAAENwgAAAABOAgAAAABOQgAAAABOggAAAABPwgAPwAhCDQEAAAAATUEAAAABDYEAAAABDcEAAAAATgEAAAAATkEAAAAAToEAAAAAT8EAEAAIQcqAABBADArAAAaABAsAABBADAtBAAyACEyQAA0ACFAAQBCACFBAQBCACEPBQAAOgAgGAAARAAgGQAARAAgNAEAAAABNQEAAAAENgEAAAAENwEAAAABOAEAAAABOQEAAAABOgEAAAABOwEAAAABPAEAAAABPQEAAAABPgEAAAABPwEAQwAhDwUAADoAIBgAAEQAIBkAAEQAIDQBAAAAATUBAAAABDYBAAAABDcBAAAAATgBAAAAATkBAAAAAToBAAAAATsBAAAAATwBAAAAAT0BAAAAAT4BAAAAAT8BAEMAIQw0AQAAAAE1AQAAAAQ2AQAAAAQ3AQAAAAE4AQAAAAE5AQAAAAE6AQAAAAE7AQAAAAE8AQAAAAE9AQAAAAE-AQAAAAE_AQBEACEIBAAASQAgKgAARQAwKwAACQAQLAAARQAwLQQARgAhMkAASAAhQAEARwAhQQEARwAhCDQEAAAAATUEAAAABDYEAAAABDcEAAAAATgEAAAAATkEAAAAAToEAAAAAT8EAEAAIQw0AQAAAAE1AQAAAAQ2AQAAAAQ3AQAAAAE4AQAAAAE5AQAAAAE6AQAAAAE7AQAAAAE8AQAAAAE9AQAAAAE-AQAAAAE_AQBEACEINEAAAAABNUAAAAAENkAAAAAEN0AAAAABOEAAAAABOUAAAAABOkAAAAABP0AAOwAhA0IAAAMAIEMAAAMAIEQAAAMAIAsDAABNACAqAABKADArAAADABAsAABKADAtBABGACEuBABGACEvEABLACEwQABIACExAQBMACEyQABIACEzQABIACEINBAAAAABNRAAAAAENhAAAAAENxAAAAABOBAAAAABORAAAAABOhAAAAABPxAAPQAhDDQBAAAAATUBAAAABTYBAAAABTcBAAAAATgBAAAAATkBAAAAAToBAAAAATsBAAAAATwBAAAAAT0BAAAAAT4BAAAAAT8BADgAIQoEAABJACAqAABFADArAAAJABAsAABFADAtBABGACEyQABIACFAAQBHACFBAQBHACFFAAAJACBGAAAJACAAAAAAAAAFSgQAAAABUQQAAAABUgQAAAABUwQAAAABVAQAAAABBUoQAAAAAVEQAAAAAVIQAAAAAVMQAAAAAVQQAAAAAQFKQAAAAAEBSgEAAAABBRAAAHMAIBEAAHYAIEcAAHQAIEgAAHUAIE0AAAEAIAMQAABzACBHAAB0ACBNAAABACAAAAAAAAFKAQAAAAELEAAAYQAwEQAAZgAwRwAAYgAwSAAAYwAwSQAAZAAgSgAAZQAwSwAAZQAwTAAAZQAwTQAAZQAwTgAAZwAwTwAAaAAwBi0EAAAAAS8QAAAAATBAAAAAATEBAAAAATJAAAAAATNAAAAAAQIAAAAFACAQAABsACADAAAABQAgEAAAbAAgEQAAawAgAQsAAHIAMAsDAABNACAqAABKADArAAADABAsAABKADAtBAAAAAEuBABGACEvEABLACEwQABIACExAQBMACEyQABIACEzQABIACECAAAABQAgCwAAawAgAgAAAGkAIAsAAGoAIAoqAABoADArAABpABAsAABoADAtBABGACEuBABGACEvEABLACEwQABIACExAQBMACEyQABIACEzQABIACEKKgAAaAAwKwAAaQAQLAAAaAAwLQQARgAhLgQARgAhLxAASwAhMEAASAAhMQEATAAhMkAASAAhM0AASAAhBi0EAFQAIS8QAFUAITBAAFYAITEBAFcAITJAAFYAITNAAFYAIQYtBABUACEvEABVACEwQABWACExAQBXACEyQABWACEzQABWACEGLQQAAAABLxAAAAABMEAAAAABMQEAAAABMkAAAAABM0AAAAABBBAAAGEAMEcAAGIAMEkAAGQAIE0AAGUAMAABPgEAAAABAgQAAG4AIFAAAG8AIAE-AQAAAAEGLQQAAAABLxAAAAABMEAAAAABMQEAAAABMkAAAAABM0AAAAABBC0EAAAAATJAAAAAAUABAAAAAUEBAAAAAQIAAAABACAQAABzACADAAAACQAgEAAAcwAgEQAAdwAgBgAAAAkAIAsAAHcAIC0EAFQAITJAAFYAIUABAF8AIUEBAF8AIQQtBABUACEyQABWACFAAQBfACFBAQBfACECBAYCBQADAQMAAQEEBwAABQUABhYABxcACBgACRkACgAAAAAABQUABhYABxcACBgACRkACgUFAA0WAA4XAA8YABAZABEAAAAAAAUFAA0WAA4XAA8YABAZABEGAgEHCAEICwEJDAEKDQEMDwENEQQOEwEPFQQSFgETFwEUGAQaGwUbHAscHQIdHgIeHwIfIAIgIQIhIwIiJQQjJwIkKQQlKgImKwInLAQoLwwpMBI"
 }
 
 async function decodeBase64AsWasm(wasmBase64: string): Promise<WebAssembly.Module> {
@@ -70,8 +70,8 @@ export interface PrismaClientConstructor {
    * const prisma = new PrismaClient({
    *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
    * })
-   * // Fetch zero or more Users
-   * const users = await prisma.user.findMany()
+   * // Fetch zero or more ExpenseCategories
+   * const expenseCategories = await prisma.expenseCategory.findMany()
    * ```
    * 
    * Read more in our [docs](https://pris.ly/d/client).
@@ -94,8 +94,8 @@ export interface PrismaClientConstructor {
  * const prisma = new PrismaClient({
  *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
  * })
- * // Fetch zero or more Users
- * const users = await prisma.user.findMany()
+ * // Fetch zero or more ExpenseCategories
+ * const expenseCategories = await prisma.expenseCategory.findMany()
  * ```
  * 
  * Read more in our [docs](https://pris.ly/d/client).
@@ -188,7 +188,25 @@ export interface PrismaClient<
     extArgs: ExtArgs
   }>>
 
-    
+      /**
+   * `prisma.expenseCategory`: Exposes CRUD operations for the **ExpenseCategory** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ExpenseCategories
+    * const expenseCategories = await prisma.expenseCategory.findMany()
+    * ```
+    */
+  get expenseCategory(): Prisma.ExpenseCategoryDelegate<ExtArgs, { omit: OmitOpts }>;
+
+  /**
+   * `prisma.expense`: Exposes CRUD operations for the **Expense** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Expenses
+    * const expenses = await prisma.expense.findMany()
+    * ```
+    */
+  get expense(): Prisma.ExpenseDelegate<ExtArgs, { omit: OmitOpts }>;
 }
 
 export function getPrismaClientClass(): PrismaClientConstructor {
