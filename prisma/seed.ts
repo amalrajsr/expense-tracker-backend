@@ -69,7 +69,6 @@ async function main(): Promise<void> {
 main()
   .catch((error) => {
     console.error("Failed to seed expense data", error);
-    process.exitCode = 1;
   })
   .finally(async () => {
     await disconnectDatabase();

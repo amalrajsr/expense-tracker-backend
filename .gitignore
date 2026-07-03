@@ -4,4 +4,5 @@ node_modules
 
 /src/generated/prisma
 dist/
-PROMPTS.md
+BACKEND-PROMPTS.md
+API_DOCUMENTATION.md
