@@ -5,4 +5,3 @@ node_modules
 /src/generated/prisma
 dist/
 BACKEND-PROMPTS.md
-API_DOCUMENTATION.md

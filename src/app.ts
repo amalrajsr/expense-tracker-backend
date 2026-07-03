@@ -8,7 +8,7 @@ app.use(express.json());
 
 app.use(
   cors({
-    // origin: ENV.CORS_ORIGIN,
+    origin: ["http://localhost:5173"],
     methods: ["GET", "POST", "DELETE"],
   }),
 );
