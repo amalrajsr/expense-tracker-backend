@@ -6,7 +6,9 @@ export function notFoundHandler(
   _res: Response,
   next: NextFunction,
 ) {
-  next(generateAPIError(`Route not found: ${req.method} ${req.originalUrl}`, 404));
+  next(
+    generateAPIError(`Route not found: ${req.method} ${req.originalUrl}`, 404),
+  );
 }
 
 export function errorHandler(
@@ -17,8 +19,7 @@ export function errorHandler(
 ) {
   const isApiError = err instanceof APIError;
   const statusCode = isApiError ? err.statusCode : 500;
-  const message =
-    err instanceof Error ? err.message : "Internal Server Error";
+  const message = isApiError ? err.message : "Internal Server Error";
 
   if (!isApiError) {
     console.error(err);
@@ -27,6 +28,5 @@ export function errorHandler(
   res.status(statusCode).json({
     success: false,
     message,
-    data: isApiError ? err.data : undefined,
   });
 }

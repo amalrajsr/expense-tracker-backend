@@ -9,10 +9,11 @@ export type CreateExpenseInput = {
   note?: string | null;
 };
 
-type ListExpenseFilters = {
+export type ListExpenseFilters = {
   categoryId?: string;
   from?: string;
   to?: string;
+  search?: string;
 };
 
 type CategoryRecord = {
@@ -97,6 +98,10 @@ function buildExpenseWhere(filters: ListExpenseFilters): Prisma.ExpenseWhereInpu
 
   if (filters.categoryId) {
     where.categoryId = BigInt(filters.categoryId);
+  }
+
+  if (filters.search?.trim()) {
+    where.note = { contains: filters.search.trim() };
   }
 
   if (filters.from || filters.to) {
@@ -197,3 +202,4 @@ export async function listCategories() {
 
   return categories.map(formatCategory);
 }
+

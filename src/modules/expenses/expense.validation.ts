@@ -3,6 +3,7 @@ import Joi from "joi";
 import { generateAPIError } from "../../utils/apiError";
 
 type RequestSource = "body" | "query" | "params";
+type ValidatedRequestData = Partial<Record<RequestSource, unknown>>;
 
 const idSchema = Joi.alternatives()
   .try(Joi.number().integer().positive(), Joi.string().trim().pattern(/^\d+$/))
@@ -80,6 +81,7 @@ export const listExpensesQuerySchema = Joi.object({
   categoryId: idSchema,
   from: dateSchema,
   to: dateSchema,
+  search: Joi.string().trim().max(500).empty(""),
 })
   .custom((value, helpers) => {
     if (value.from && value.to) {
@@ -101,8 +103,20 @@ export const expenseIdParamSchema = Joi.object({
   id: idSchema.required(),
 });
 
+export function getValidatedRequestData<T>(
+  res: Response,
+  source: RequestSource,
+  fallback: unknown,
+): T {
+  const validatedRequest = res.locals.validatedRequest as
+    | ValidatedRequestData
+    | undefined;
+
+  return (validatedRequest?.[source] ?? fallback) as T;
+}
+
 export function validateRequest(schema: Joi.ObjectSchema, source: RequestSource) {
-  return (req: Request, _res: Response, next: NextFunction): void => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     const { error, value } = schema.validate(req[source], {
       abortEarly: false,
       allowUnknown: false,
@@ -122,7 +136,12 @@ export function validateRequest(schema: Joi.ObjectSchema, source: RequestSource)
       return;
     }
 
-    (req as unknown as Record<RequestSource, unknown>)[source] = value;
+    res.locals.validatedRequest = {
+      ...((res.locals.validatedRequest as ValidatedRequestData | undefined) ??
+        {}),
+      [source]: value,
+    };
     next();
   };
 }
+

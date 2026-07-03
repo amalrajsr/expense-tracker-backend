@@ -1,23 +1,28 @@
 import { Request, Response } from "express";
 import {
   CreateExpenseInput,
+  ListExpenseFilters,
   createExpense,
   deleteExpense,
   getExpenseSummary,
   listCategories,
   listExpenses,
 } from "./expense.service";
+import { getValidatedRequestData } from "./expense.validation";
+
+type ExpenseIdParams = {
+  id: string;
+};
 
 export async function createExpenseController(
   req: Request,
   res: Response,
 ): Promise<void> {
-  const payload: CreateExpenseInput = {
-    amount: req.body.amount,
-    categoryId: req.body.categoryId,
-    date: req.body.date,
-    note: req.body.note,
-  };
+  const payload = getValidatedRequestData<CreateExpenseInput>(
+    res,
+    "body",
+    req.body,
+  );
   const expense = await createExpense(payload);
 
   res.status(201).json({
@@ -31,7 +36,12 @@ export async function listExpensesController(
   req: Request,
   res: Response,
 ): Promise<void> {
-  const expenses = await listExpenses(req.query);
+  const filters = getValidatedRequestData<ListExpenseFilters>(
+    res,
+    "query",
+    req.query,
+  );
+  const expenses = await listExpenses(filters);
 
   res.status(200).json({
     success: true,
@@ -43,7 +53,13 @@ export async function deleteExpenseController(
   req: Request,
   res: Response,
 ): Promise<void> {
-  await deleteExpense(String(req.params.id));
+  const params = getValidatedRequestData<ExpenseIdParams>(
+    res,
+    "params",
+    req.params,
+  );
+
+  await deleteExpense(params.id);
 
   res.status(200).json({
     success: true,
