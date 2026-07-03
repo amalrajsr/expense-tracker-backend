@@ -1,30 +1,32 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/**
- * Represents an API error that can be handled.
- * @param {string} message - corresponding error message.
- * @param {number} statusCode - corresponding http status code.
- * @param {boolean} refreshTokenExpired - indicates if the refresh token is expired.
- */
+export type PublicErrorDetail = {
+  field?: string;
+  message: string;
+};
+
 class APIError extends Error {
   statusCode: number;
   success: boolean;
-  data: any;
-  constructor(message: string, statusCode: number, data?: any) {
+  details?: PublicErrorDetail[];
+
+  constructor(
+    message: string,
+    statusCode: number,
+    details?: PublicErrorDetail[],
+  ) {
     super(message);
     this.statusCode = statusCode;
     this.success = false;
-    this.data = data;
+    this.details = details;
   }
 }
-// type GenerateAPIErrorFn = (msg: string, errcode: {code: string, httpStatus: number}) => APIError;
 
 /** Generates a custom api error with given message and status code. */
 const generateAPIError = (
   msg: string,
   httpStatus: number,
-  data?: any,
+  details?: PublicErrorDetail[],
 ): APIError => {
-  return new APIError(msg, httpStatus, data);
+  return new APIError(msg, httpStatus, details);
 };
 
 export { generateAPIError, APIError };

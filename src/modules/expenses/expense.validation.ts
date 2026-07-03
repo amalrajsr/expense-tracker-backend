@@ -5,9 +5,42 @@ import { generateAPIError } from "../../utils/apiError";
 type RequestSource = "body" | "query" | "params";
 type ValidatedRequestData = Partial<Record<RequestSource, unknown>>;
 
+const MAX_UNSIGNED_BIGINT = BigInt("18446744073709551615");
+const dateOnlyPattern = /^(\d{4})-(\d{2})-(\d{2})$/;
+const timezoneAwareDateTimePattern =
+  /^\d{4}-\d{2}-\d{2}T.+(?:Z|[+-]\d{2}:\d{2})$/;
+
+function isValidDateOnlyValue(value: string): boolean {
+  const dateOnlyMatch = dateOnlyPattern.exec(value);
+
+  if (!dateOnlyMatch) {
+    return false;
+  }
+
+  const date = new Date(`${value}T00:00:00.000Z`);
+
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
+}
+
 const idSchema = Joi.alternatives()
-  .try(Joi.number().integer().positive(), Joi.string().trim().pattern(/^\d+$/))
-  .custom((value) => String(value));
+  .try(Joi.number().integer().positive(), Joi.string().trim())
+  .custom((value, helpers) => {
+    const id = String(value).trim();
+
+    if (!/^[1-9]\d*$/.test(id)) {
+      return helpers.error("number.positive");
+    }
+
+    if (BigInt(id) > MAX_UNSIGNED_BIGINT) {
+      return helpers.error("number.max");
+    }
+
+    return id;
+  })
+  .messages({
+    "number.max": "{{#label}} must be a valid unsigned bigint id",
+    "number.positive": "{{#label}} must be a positive integer id",
+  });
 
 const amountSchema = Joi.alternatives()
   .try(Joi.number().positive(), Joi.string().trim())
@@ -32,20 +65,21 @@ const dateSchema = Joi.string()
   .trim()
   .custom((value, helpers) => {
     const dateValue = String(value);
-    const dateOnlyMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateValue);
 
-    if (dateOnlyMatch) {
-      const date = new Date(`${dateValue}T00:00:00.000Z`);
-
-      if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== dateValue) {
+    if (dateOnlyPattern.test(dateValue)) {
+      if (!isValidDateOnlyValue(dateValue)) {
         return helpers.error("date.base");
       }
 
       return dateValue;
     }
 
-    if (!/^\d{4}-\d{2}-\d{2}T.+$/.test(dateValue)) {
+    if (!timezoneAwareDateTimePattern.test(dateValue)) {
       return helpers.error("date.format");
+    }
+
+    if (!isValidDateOnlyValue(dateValue.slice(0, 10))) {
+      return helpers.error("date.base");
     }
 
     const date = new Date(dateValue);
@@ -57,13 +91,11 @@ const dateSchema = Joi.string()
     return dateValue;
   }, "ISO date validation")
   .messages({
-    "date.format": "{{#label}} must be an ISO date or datetime",
+    "date.format": "{{#label}} must be an ISO date or timezone-aware datetime",
   });
 
-const categorySchema = Joi.string().trim().min(1).max(80);
-
 function parseDateBoundary(value: string, endOfDay: boolean): Date {
-  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+  if (dateOnlyPattern.test(value)) {
     return new Date(`${value}T${endOfDay ? "23:59:59.999" : "00:00:00.000"}Z`);
   }
 
@@ -144,4 +176,3 @@ export function validateRequest(schema: Joi.ObjectSchema, source: RequestSource)
     next();
   };
 }
-
