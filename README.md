@@ -26,17 +26,11 @@ Install dependencies:
 npm install
 ```
 
-Create a local environment file:
-
-```powershell
-Copy-Item env.sample .env
-```
-
 Set the required values in `.env`:
 
 ```env
 DATABASE_URL=""
-PORT=
+PORT=5000
 CORS_ORIGIN=""
 ```
 
@@ -213,14 +207,6 @@ The `note` field is optional and capped at 500 characters because it is meant fo
 DATABASE_URL  MySQL connection string. Required.
 PORT          Server port. Defaults to 5000.
 CORS_ORIGIN   Allowed frontend origin.
-```
-
-Example:
-
-```env
-DATABASE_URL=""
-PORT=
-CORS_ORIGIN=""
 ```
 
 ## Useful Commands
