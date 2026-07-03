@@ -35,9 +35,9 @@ Copy-Item env.sample .env
 Set the required values in `.env`:
 
 ```env
-DATABASE_URL="mysql://USER:PASSWORD@localhost:3306/expense_tracker"
-PORT=5000
-CORS_ORIGIN="http://localhost:3000"
+DATABASE_URL=""
+PORT=
+CORS_ORIGIN=""
 ```
 
 Create the database in MySQL if it does not already exist:
